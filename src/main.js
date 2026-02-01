@@ -65,6 +65,32 @@ waitForLibraries(() => {
 
   initPageTransitions();
 
+// Function to load members page CSS dynamically
+function loadMembersCSS() {
+  // Check if the CSS is already loaded
+  if (document.getElementById('members-custom-css')) {
+    console.log('[Members CSS] Already loaded');
+    return;
+  }
+  
+  console.log('[Members CSS] Loading members-custom.css');
+  const link = document.createElement('link');
+  link.id = 'members-custom-css';
+  link.rel = 'stylesheet';
+  link.type = 'text/css';
+  link.href = './assets/static/css/members-custom.css';
+  document.head.appendChild(link);
+}
+
+// Function to remove members page CSS
+function removeMembersCSS() {
+  const link = document.getElementById('members-custom-css');
+  if (link) {
+    console.log('[Members CSS] Removing members-custom.css');
+    link.remove();
+  }
+}
+
 
 // Animate rainbows function
 function animateRainbow(selector, mode, count, duration = 4, delay = 0, stagger = 0.075, rainbowTimeline = null, scrollTriggerConfig = null) {
@@ -307,6 +333,7 @@ function initPageTransitions() {
       },
       once(data) {
         console.log('[Members Page] Initializing without Lenis smooth scroll');
+        loadMembersCSS();
         document.fonts.ready.then(function () {
           // Don't initialize Lenis for members page - use native scroll
           initScript();
@@ -342,11 +369,24 @@ function initPageTransitions() {
         await commonLeaveAfterOffset(data);
       },
       async enter(data) {
+        loadMembersCSS();
         await commonEnter(data);
       },
       async beforeEnter(data) {
         // Skip Lenis initialization for members page - use native scroll
         ScrollTrigger.getAll().forEach(t => t.kill());
+        
+        // Remove any Lenis classes and ensure members-page class
+        document.documentElement.classList.remove('lenis', 'lenis-smooth', 'lenis-stopped');
+        document.documentElement.classList.add('members-page');
+        document.body.classList.add('members-page');
+        
+        // Force native scroll styles
+        document.documentElement.style.overflow = 'auto';
+        document.documentElement.style.height = 'auto';
+        document.body.style.overflow = 'auto';
+        document.body.style.height = 'auto';
+        
         initScript();
       },
       async afterEnter(data) {
